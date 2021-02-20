@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+    <script src="./jquery.js"></script>
+    <script src="./bootstrap/js/bootstrap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .top {
+            width: 900px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .div1 {
+            width: 350px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+        }
+        .inp1 {
+            width: 300px;
+            height: 30px;
+            border: none;
+        }
+        .btn1 {
+            width: 50px;
+            border: none;
+            height: 30px;
+            background: #ccc;
+        }
+        .but2 {
+            width: 80px;
+            border: none;
+            height: 30px;
+            background: skyblue;
+            border-radius: 5px;
+            margin-left: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <!-- 搜索框 -->
+        <div class="div1"><input type="text" name="inp1" class="inp1" placeholder="请输入内容">
+        <button class="glyphicon glyphicon-search btn1"></button></div>
+        <!-- 添加用户 -->
+        <button class="but2"  data-toggle="modal" data-target="#myModal">添加用户</button>
+    </div>
+    <!-- 表格 -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>姓名</th>
+                <th>邮箱</th>
+                <th>电话</th>
+                <th>角色</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">添加用户信息</h4>
+                </div>
+                <div class="modal-body">
+                    用户名:<input type="text" class="username"><br><br>
+                    邮&nbsp;&nbsp;&nbsp;&nbsp;箱:<input type="text" class="email"><br><br>
+                    电&nbsp;&nbsp;&nbsp;&nbsp;话:<input type="text" class="phone"><br><br>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="tianjia">确定</button>
+                </div>
+            </div><!-- /.模态框内 -->
+        </div><!-- /.模态框玩 -->
+    </div>
+    <!-- 修改模态框（Modal） -->
+    <div class="modal fade" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">修改用户信息</h4>
+                </div>
+                <div class="modal-body">
+                    用户名:<input type="text" class="username1" disabled><br><br>
+                    邮&nbsp;&nbsp;&nbsp;&nbsp;箱:<input type="text" class="email1"><br><br>
+                    电&nbsp;&nbsp;&nbsp;&nbsp;话:<input type="text" class="phone1"><br><br>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="xiugai">确定</button>
+                </div>
+            </div><!-- /.模态框内 -->
+        </div><!-- /.模态框玩 -->
+    </div>
+</body>
+<script>
+    //渲染页面
+    function show(){
+        $("tbody").empty();
+        $.get("http://localhost:8080/show",{},function(res){
+            res.forEach(item => {
+                $("<tr/>").html(`
+                <td>${item._id}</td>
+                    <td>${item.username}</td>
+                    <td>${item.email}</td>
+                    <td>${item.phone}</td>
+                    <td>超级管理员</td>
+                    <td>
+                        <span class="glyphicon glyphicon-pencil update" id=${item._id} data-toggle="modal" data-target="#myModal1" onclick='edit(this)'></span>
+                        <span class="glyphicon glyphicon-trash" id=${item._id} onclick="del(this)"></span>
+                    </td>
+                `).appendTo($("tbody"))
+            });
+        })
+    }
+    show();
+    //增加用户
+    $("#tinajia").on("click",function(){
+        $("#tianjia").attr("data-dismiss","modal");
+        $.get("http://localhost:8080/add",{
+            username:$(".username").val(),
+            email:$(".email").val(),
+            phone:$(".phone").val()
+        },function(res){
+            console.log(res);
+            if(res.status==1){
+                show();
+            }
+        })
+    })
+    //修改
+    function edit(ele){
+        let id=$(ele).attr("id");
+        localStorage.setItem("id",id)
+        $.get("http://localhost:8080/editshow",{
+            id
+        },function(res){
+            console.log(res);
+            $(".username1").val(res[0].username),
+            $(".email1").val(res[0].email),
+            $(".phone1").val(res[0].phone)
+        })
+    }
+    //确认修改按钮
+    $("#xiugai").on("click",function(){
+        let id=localStorage.getItem("id");
+        let email = $(".email1").val()
+        let phone = $(".phone1").val()
+        $.ajax({
+            type:'get',
+            url:"http://localhost:8080/xiugai",
+            data:{
+                id,
+                email,
+                phone
+            },success(res){
+                res.status==1?show():null;
+            }
+        })
+    })
+    //删除按钮
+    function del(ele){
+        let id=$(ele).attr("id");
+        $.post("http://localhost:8080/show",{
+            id
+        },function(res){
+            res.status==1?show():null;
+        })
+    }
+    //搜索
+    $(".btn1").on("click",function(){
+        let ssText = $(".inp1").val();
+        $.get("http://localhost:8080/show",{},function(res){
+            res.forEach(item => {
+                let newArr=res.filter(item=>{
+                    return ssText === item.username;
+                })
+                $("tbody").empty();
+                $("<tr/>").html(`
+                    <td>${newArr[0]._id}</td>
+                    <td>${newArr[0].username}</td>
+                    <td>${newArr[0].email}</td>
+                    <td>${newArr[0].phone}</td>
+                    <td>超级管理员</td>
+                    <td>
+                        <span class="glyphicon glyphicon-pencil update" id=${newArr[0]._id} data-toggle="modal" data-target="#myModal1" onclick='edit(this)'></span>
+                        <span class="glyphicon glyphicon-trash" id=${newArr[0]._id} onclick="del(this)"></span>
+                    </td>
+                `).appendTo($("tbody"))
+            });
+        })
+    })
+        
+</script>
+</html>
